@@ -11,6 +11,15 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { ChevronLeft, ChevronRight, Search, ArrowUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +43,8 @@ interface DataTableProps<T> {
     totalPages: number;
     perPage: number;
     total: number;
+    nextPage: number | null;
+    prevPage: number | null;
     onPageChange: (page: number) => void;
   };
   sorting?: {
@@ -142,39 +153,103 @@ export function DataTable<T extends Record<string, any>>({
         </Table>
       </div>
 
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex items-center justify-between">
+      {pagination && (
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="text-sm text-muted-foreground">
-            Showing {((pagination.currentPage - 1) * pagination.perPage) + 1} to{" "}
-            {Math.min(
-              pagination.currentPage * pagination.perPage,
-              pagination.total
-            )}{" "}
-            of {pagination.total} results
+            {pagination.total > 0 && pagination.perPage > 0 && pagination.currentPage > 0 ? (
+              <>
+                Showing {((pagination.currentPage - 1) * pagination.perPage) + 1} to{" "}
+                {Math.min(
+                  pagination.currentPage * pagination.perPage,
+                  pagination.total
+                )}{" "}
+                of {pagination.total} results
+              </>
+            ) : (
+              "No results"
+            )}
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
-              disabled={pagination.currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-            <div className="text-sm text-muted-foreground">
-              Page {pagination.currentPage} of {pagination.totalPages}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
-              disabled={pagination.currentPage === pagination.totalPages}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  asButton
+                  onClick={() => {
+                    if (pagination.prevPage != null) {
+                      pagination.onPageChange(pagination.prevPage);
+                    }
+                  }}
+                  disabled={pagination.prevPage == null}
+                />
+              </PaginationItem>
+
+              {pagination.totalPages > 0 && (() => {
+                const pages: (number | "ellipsis")[] = [];
+                const currentPage = pagination.currentPage;
+                const totalPages = pagination.totalPages;
+                const maxVisible = 7;
+
+                if (totalPages <= maxVisible) {
+                  for (let i = 1; i <= totalPages; i++) {
+                    pages.push(i);
+                  }
+                } else {
+                  if (currentPage <= 3) {
+                    for (let i = 1; i <= 4; i++) {
+                      pages.push(i);
+                    }
+                    pages.push("ellipsis");
+                    pages.push(totalPages);
+                  } else if (currentPage >= totalPages - 2) {
+                    pages.push(1);
+                    pages.push("ellipsis");
+                    for (let i = totalPages - 3; i <= totalPages; i++) {
+                      pages.push(i);
+                    }
+                  } else {
+                    pages.push(1);
+                    pages.push("ellipsis");
+                    for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                      pages.push(i);
+                    }
+                    pages.push("ellipsis");
+                    pages.push(totalPages);
+                  }
+                }
+
+                return pages.map((page, index) => (
+                  <PaginationItem key={page === "ellipsis" ? `ellipsis-${index}` : page}>
+                    {page === "ellipsis" ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        asButton
+                        onClick={() => {
+                          pagination.onPageChange(page);
+                        }}
+                        isActive={page === currentPage}
+                        className="cursor-pointer"
+                      >
+                        {page}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ));
+              })()}
+
+              <PaginationItem>
+                <PaginationNext
+                  asButton
+                  onClick={() => {
+                    if (pagination.nextPage != null) {
+                      pagination.onPageChange(pagination.nextPage);
+                    }
+                  }}
+                  disabled={pagination.nextPage == null}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
     </div>

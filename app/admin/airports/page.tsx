@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useEffect, useState, useCallback } from "react";
 import { AirportTable } from "@/components/admin/AirportTable";
+import { CreateAirportDialog } from "@/components/admin/CreateAirportDialog";
 import { AirportService, AirportSearchParams } from "@/services/AirportService";
 import { AirportResponse } from "@/types/airport";
 import { PaginatedResponse } from "@/types/pagination";
@@ -19,10 +20,13 @@ export default function AdminAirportsPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [perPage] = useState(10);
   const [total, setTotal] = useState(0);
+  const [nextPage, setNextPage] = useState<number | null>(null);
+  const [prevPage, setPrevPage] = useState<number | null>(null);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
     null
   );
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const fetchAirports = useCallback(async () => {
     try {
@@ -47,10 +51,17 @@ export default function AdminAirportsPage() {
       }
 
       setAirports(response.data);
-      setTotalPages(response.meta.totalPages);
-      setTotal(response.meta.total);
-      if (response.meta.currentPage !== undefined) {
-        setCurrentPage(response.meta.currentPage);
+      const meta = response.meta as any;
+      setTotalPages(meta.totalPages ?? meta.total_pages ?? 1);
+      setTotal(meta.total ?? 0);
+      const nextPageValue = meta.nextPage ?? meta.next_page;
+      const prevPageValue = meta.prevPage ?? meta.prev_page;
+      setNextPage(nextPageValue !== undefined ? nextPageValue : null);
+      setPrevPage(prevPageValue !== undefined ? prevPageValue : null);
+      if (meta.currentPage !== undefined) {
+        setCurrentPage(meta.currentPage);
+      } else if (meta.current_page !== undefined) {
+        setCurrentPage(meta.current_page);
       }
     } catch (error) {
       console.error("Failed to fetch airports:", error);
@@ -143,9 +154,11 @@ export default function AdminAirportsPage() {
   };
 
   const handleCreate = () => {
-    toast.info("Create airport", {
-      description: "Create new airport functionality",
-    });
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateSuccess = () => {
+    fetchAirports();
   };
 
   return (
@@ -175,6 +188,8 @@ export default function AdminAirportsPage() {
           totalPages,
           perPage,
           total,
+          nextPage,
+          prevPage,
           onPageChange: handlePageChange,
         }}
         sorting={{
@@ -182,6 +197,12 @@ export default function AdminAirportsPage() {
           direction: sortDirection,
           onSort: handleSort,
         }}
+      />
+
+      <CreateAirportDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        onSuccess={handleCreateSuccess}
       />
     </div>
   );
