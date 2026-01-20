@@ -4,6 +4,7 @@ import * as React from "react";
 import { useEffect, useState, useCallback } from "react";
 import { FlightTable } from "@/components/admin/FlightTable";
 import { CreateFlightDialog } from "@/components/admin/CreateFlightDialog";
+import { EditFlightDialog } from "@/components/admin/EditFlightDialog";
 import { FlightService, FlightSearchParams } from "@/services/FlightService";
 import { AirportService } from "@/services/AirportService";
 import { FlightResponse } from "@/types/flight";
@@ -21,6 +22,8 @@ export default function AdminFlightsPage() {
   const [airportsList, setAirportsList] = useState<AirportResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedFlight, setSelectedFlight] = useState<FlightResponse | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -131,10 +134,8 @@ export default function AdminFlightsPage() {
   };
 
   const handleEdit = (flight: FlightResponse) => {
-    // TODO: Implement edit functionality
-    toast.info("Edit functionality coming soon", {
-      description: `Edit flight ${flight.id}`,
-    });
+    setSelectedFlight(flight);
+    setEditDialogOpen(true);
   };
 
   const handleDelete = (flight: FlightResponse) => {
@@ -157,6 +158,11 @@ export default function AdminFlightsPage() {
 
   const handleCreateSuccess = () => {
     fetchFlights();
+  };
+
+  const handleEditSuccess = () => {
+    fetchFlights();
+    setSelectedFlight(null);
   };
 
   return (
@@ -206,6 +212,19 @@ export default function AdminFlightsPage() {
         onOpenChange={setCreateDialogOpen}
         airports={airportsList}
         onSuccess={handleCreateSuccess}
+      />
+
+      <EditFlightDialog
+        open={editDialogOpen}
+        onOpenChange={(open) => {
+          setEditDialogOpen(open);
+          if (!open) {
+            setSelectedFlight(null);
+          }
+        }}
+        flight={selectedFlight}
+        airports={airportsList}
+        onSuccess={handleEditSuccess}
       />
     </div>
   );

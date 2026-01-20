@@ -73,7 +73,7 @@ export function FlightTable({
   const getActions = (row: FlightResponse): TableAction<FlightResponse>[] => {
     const actions: TableAction<FlightResponse>[] = [];
     
-    if (onView) {
+    if (onView && false) {
       actions.push({
         label: "View",
         icon: Eye,

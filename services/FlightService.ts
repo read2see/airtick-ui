@@ -23,6 +23,8 @@ export interface CreateFlightRequest {
   price: number;
 }
 
+export type UpdateFlightRequest = CreateFlightRequest;
+
 export const FlightService = {
   /**
    * Get paginated list of flights
@@ -79,6 +81,21 @@ export const FlightService = {
   ): Promise<FlightResponse> {
     const { data } = await apiClient.post(
       API_ROUTES.flights.base,
+      payload
+    );
+    return data;
+  },
+
+  /**
+   * Update existing flight
+   * PUT /api/flights/:id
+   */
+  async updateFlight(
+    flightId: number | string,
+    payload: UpdateFlightRequest
+  ): Promise<FlightResponse> {
+    const { data } = await apiClient.put(
+      API_ROUTES.flights.byId(flightId),
       payload
     );
     return data;
