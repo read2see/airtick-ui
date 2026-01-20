@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { UserService } from "@/services/UserService"
 import { AuthenticatedUserResponse } from "@/types/auth"
 import { LogOut } from "lucide-react"
+import { getImagePath } from "@/lib/imageUtils"
 
 export default function ProfilePage() {
   const { user, loading, isAuthenticated, fetchUser, logout } = useAuth()
@@ -20,6 +21,7 @@ export default function ProfilePage() {
   const [profileData, setProfileData] = React.useState<AuthenticatedUserResponse | null>(null)
   const [isLoadingProfile, setIsLoadingProfile] = React.useState(true)
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
+  const profileImageUrl = React.useMemo(() => getImagePath(profileData?.profile_img), [profileData?.profile_img])
 
   React.useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -58,16 +60,6 @@ export default function ProfilePage() {
     }
   }, [logout])
 
-  const getImageUrl = () => {
-    if (profileData?.profile_img) {
-      const apiUrl = process.env.NEXT_PUBLIC_REST_API_URL
-      if (apiUrl) {
-        return `${apiUrl}/api/images/${profileData.profile_img}`
-      }
-      return `/api/images/${profileData.profile_img}`
-    }
-    return null
-  }
 
   if (loading || isLoadingProfile) {
     return (
@@ -125,10 +117,10 @@ export default function ProfilePage() {
             <div className="flex flex-col sm:flex-row gap-6">
               {/* Profile Image */}
               <div className="flex-shrink-0">
-                {getImageUrl() ? (
+                {profileImageUrl ? (
                   <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-border">
                     <Image
-                      src={getImageUrl()!}
+                      src={profileImageUrl}
                       alt={`${profileData.first_name} ${profileData.last_name}`}
                       fill
                       className="object-cover"
