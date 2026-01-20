@@ -4,6 +4,7 @@ import * as React from "react";
 import { useEffect, useState, useCallback } from "react";
 import { AirportTable } from "@/components/admin/AirportTable";
 import { CreateAirportDialog } from "@/components/admin/CreateAirportDialog";
+import { UpdateAirportDialog } from "@/components/admin/UpdateAirportDialog";
 import { AirportService, AirportSearchParams } from "@/services/AirportService";
 import { AirportResponse } from "@/types/airport";
 import { PaginatedResponse } from "@/types/pagination";
@@ -27,6 +28,8 @@ export default function AdminAirportsPage() {
     null
   );
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [selectedAirport, setSelectedAirport] = useState<AirportResponse | null>(null);
 
   const fetchAirports = useCallback(async () => {
     try {
@@ -115,9 +118,8 @@ export default function AdminAirportsPage() {
   };
 
   const handleEdit = (airport: AirportResponse) => {
-    toast.info("Edit functionality", {
-      description: `Edit airport: ${airport.name}`,
-    });
+    setSelectedAirport(airport);
+    setUpdateDialogOpen(true);
   };
 
   const handleDelete = async (airport: AirportResponse) => {
@@ -158,6 +160,10 @@ export default function AdminAirportsPage() {
   };
 
   const handleCreateSuccess = () => {
+    fetchAirports();
+  };
+
+  const handleUpdateSuccess = () => {
     fetchAirports();
   };
 
@@ -203,6 +209,13 @@ export default function AdminAirportsPage() {
         open={createDialogOpen}
         onOpenChange={setCreateDialogOpen}
         onSuccess={handleCreateSuccess}
+      />
+
+      <UpdateAirportDialog
+        open={updateDialogOpen}
+        onOpenChange={setUpdateDialogOpen}
+        airport={selectedAirport}
+        onSuccess={handleUpdateSuccess}
       />
     </div>
   );
