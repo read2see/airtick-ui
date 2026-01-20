@@ -1,8 +1,10 @@
 "use client"
 
 import * as React from "react"
+import { Suspense } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { AxiosError } from "axios"
 import * as z from "zod"
@@ -34,8 +36,9 @@ const formSchema = z.object({
     .min(1, "Password is required.")
 })
 
-export default function LoginPage() {
+function LoginForm() {
   const { login } = useAuth()
+  const searchParams = useSearchParams()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -49,9 +52,14 @@ export default function LoginPage() {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     
+    // Get redirect parameter from URL query string
+    const redirectPath = searchParams.get("redirect")
+    
     try {
-      await login(data.email, data.password)
+      await login(data.email, data.password, redirectPath)
       
+      // Login successful - redirect will happen via window.location
+      // Don't reset isSubmitting as page will navigate away
       toast.success("Login successful!", {
         description: "Redirecting to your dashboard...",
         duration: 2000,
@@ -224,5 +232,27 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </section>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <section className="grid place-items-center my-[5rem]">
+        <div className="">
+          <h1 className="text-xl font-bold mb-3">AIRTICK</h1>
+        </div>
+        <Card className="w-[95%] sm:max-w-md mx-auto lg:mx-auto md:mx-auto">
+          <CardHeader>
+            <CardTitle>Login</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
+      </section>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

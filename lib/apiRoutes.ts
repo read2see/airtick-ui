@@ -3,6 +3,7 @@ export const API_ROUTES = {
     login: "/auth/users/login",
     register: "/auth/users/register",
     me: "/auth/users/me",
+    logout: "/auth/users/logout",
     resendVerification: "/auth/users/resend-verification",
     forgotPassword: "/auth/users/forgot-password",
     resetPasswordByToken: "/auth/users/reset-password/token",
@@ -79,5 +80,9 @@ export const API_ROUTES = {
   test: {
     whatsapp: "/api/test/whatsapp",
     config: "/api/test/config",
+  },
+
+  admin: {
+    stats: "/api/admin/stats",
   },
 } as const;

@@ -27,8 +27,12 @@ apiClient.interceptors.response.use(
                  window.location.pathname.startsWith("/resend-verification"));
             
             const isAuthCheckEndpoint = error.config?.url?.includes("/auth/users/me");
+            // Don't redirect for admin API endpoints - let the component handle the error
+            const isAdminApiEndpoint = error.config?.url?.includes("/api/admin");
+            // Don't redirect for logout endpoint - let the logout handler manage navigation
+            const isLogoutEndpoint = error.config?.url?.includes("/auth/users/logout");
             
-            if (!isAuthPage && !isAuthCheckEndpoint) {
+            if (!isAuthPage && !isAuthCheckEndpoint && !isAdminApiEndpoint && !isLogoutEndpoint) {
                 window.location.href = "/login";
             }
         }
