@@ -63,11 +63,6 @@ export default function AdminAirportsPage() {
       const prevPageValue = meta.prevPage ?? meta.prev_page;
       setNextPage(nextPageValue !== undefined ? nextPageValue : null);
       setPrevPage(prevPageValue !== undefined ? prevPageValue : null);
-      if (meta.currentPage !== undefined) {
-        setCurrentPage(meta.currentPage);
-      } else if (meta.current_page !== undefined) {
-        setCurrentPage(meta.current_page);
-      }
     } catch (error) {
       console.error("Failed to fetch airports:", error);
       if (error instanceof AxiosError) {
@@ -92,21 +87,11 @@ export default function AdminAirportsPage() {
     fetchAirports();
   }, [fetchAirports]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (currentPage !== 1) {
-        setCurrentPage(1);
-      } else {
-        fetchAirports();
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchValue]);
-
   const handleSearch = (value: string) => {
     setSearchValue(value);
-    setCurrentPage(1);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
   };
 
   const handlePageChange = (page: number) => {

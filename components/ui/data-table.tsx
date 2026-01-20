@@ -68,6 +68,34 @@ export function DataTable<T extends Record<string, any>>({
   sorting,
   emptyMessage = "No data available",
 }: DataTableProps<T>) {
+  const [localSearchValue, setLocalSearchValue] = React.useState(searchValue);
+  const lastSentValueRef = React.useRef<string>(searchValue);
+  const isInternalUpdateRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (isInternalUpdateRef.current) {
+      isInternalUpdateRef.current = false;
+      return;
+    }
+    if (searchValue !== lastSentValueRef.current) {
+      setLocalSearchValue(searchValue);
+      lastSentValueRef.current = searchValue;
+    }
+  }, [searchValue]);
+
+  React.useEffect(() => {
+    if (!onSearch) return;
+    if (localSearchValue === lastSentValueRef.current) return;
+
+    const timer = setTimeout(() => {
+      lastSentValueRef.current = localSearchValue;
+      isInternalUpdateRef.current = true;
+      onSearch(localSearchValue);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [localSearchValue, onSearch]);
+
   const handleSort = (columnId: string) => {
     if (!sorting) return;
 
@@ -86,15 +114,15 @@ export function DataTable<T extends Record<string, any>>({
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder={searchPlaceholder}
-              value={searchValue}
-              onChange={(e) => onSearch(e.target.value)}
+              value={localSearchValue}
+              onChange={(e) => setLocalSearchValue(e.target.value)}
               className="pl-9"
             />
           </div>
         </div>
       )}
 
-      <div className="rounded-md border">
+      <div className="rounded-md border transition-opacity duration-200">
         <Table>
           <TableHeader>
             <TableRow>
