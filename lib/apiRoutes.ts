@@ -16,6 +16,11 @@ export const API_ROUTES = {
       `/auth/users/${userId}`,
   },
 
+  users: {
+    updateProfile: "/api/users/me/profile",
+    uploadProfileImage: "/api/users/me/profile/upload",
+  },
+
   airports: {
     base: "/api/airports",
 

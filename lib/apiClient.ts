@@ -7,6 +7,16 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
     (config) => {
+        // Add Bearer token to Authorization header from sessionStorage
+        if (typeof window !== "undefined") {
+            const token = sessionStorage.getItem("auth_token");
+            if (token) {
+                if (!config.headers) {
+                    config.headers = {} as any;
+                }
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        }
         return config;
     },
     (error) => {
