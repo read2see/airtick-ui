@@ -1,12 +1,13 @@
 "use client"
 
 import * as React from "react"
+import { Suspense } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
-import * as z from "zod"
 import { AxiosError } from "axios"
+import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -23,7 +24,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { AuthService } from "@/services/AuthService"
+import { useAuth } from "@/contexts/AuthContext"
 
 const formSchema = z.object({
   email: z
@@ -32,11 +33,12 @@ const formSchema = z.object({
     .email("Please enter a valid email address."),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters.")
+    .min(1, "Password is required.")
 })
 
-export default function RegisterPage() {
-  const router = useRouter()
+function LoginForm() {
+  const { login } = useAuth()
+  const searchParams = useSearchParams()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -50,38 +52,70 @@ export default function RegisterPage() {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     
+    // Get redirect parameter from URL query string
+    const redirectPath = searchParams.get("redirect")
+    
     try {
-      await AuthService.register({
-        email_address: data.email,
-        password: data.password,
+      await login(data.email, data.password, redirectPath)
+      
+      // Login successful - redirect will happen via window.location
+      // Don't reset isSubmitting as page will navigate away
+      toast.success("Login successful!", {
+        description: "Redirecting to your dashboard...",
+        duration: 2000,
       })
-
-      toast.success("Registration successful!", {
-        description: "Please check your email to verify your account before logging in.",
-        duration: 5000,
-      })
-
-      // Redirect to login page after successful registration
-      setTimeout(() => {
-        router.push("/login")
-      }, 1500)
     } catch (error) {
       setIsSubmitting(false)
       
       if (error instanceof AxiosError) {
         const response = error.response
         
-        // Handle validation errors (422)
+        if (response?.status === 401) {
+          const errorMessage = 
+            (response.data as any)?.detail || 
+            (response.data as any)?.message || 
+            "Invalid email or password. Please try again."
+          
+          toast.error("Login failed", {
+            description: errorMessage,
+          })
+          
+          form.setValue("password", "")
+          return
+        }
+        
+        if (response?.status === 403) {
+          const errorData = response.data as any
+          const errorMessage = 
+            errorData?.detail || 
+            errorData?.message || 
+            "Access forbidden. Your account may not be verified or you may not have permission to access this resource."
+          
+          const isVerificationError = 
+            typeof errorMessage === "string" && 
+            (errorMessage.toLowerCase().includes("verif") || 
+             errorMessage.toLowerCase().includes("email"))
+          
+          toast.error(
+            isVerificationError ? "Account not verified" : "Access forbidden", 
+            {
+              description: errorMessage,
+              duration: 5000,
+            }
+          )
+          
+          form.setValue("password", "")
+          return
+        }
+        
         if (response?.status === 422) {
           const errorData = response.data as any
           
-          // Handle field-specific validation errors
           if (errorData?.detail) {
             if (Array.isArray(errorData.detail)) {
-              // Handle array of validation errors
               errorData.detail.forEach((err: any) => {
                 const field = err.loc?.[err.loc.length - 1]
-                if (field === "email_address" || field === "email") {
+                if (field === "email") {
                   form.setError("email", {
                     type: "server",
                     message: err.msg || "Invalid email address.",
@@ -103,40 +137,26 @@ export default function RegisterPage() {
               description: "Please check your input and try again.",
             })
           }
-          return
-        }
-        
-        // Handle email already exists (409 or 400)
-        if (response?.status === 409 || response?.status === 400) {
-          const errorMessage = 
-            (response.data as any)?.detail || 
-            (response.data as any)?.message || 
-            "An account with this email already exists."
           
-          form.setError("email", {
-            type: "server",
-            message: errorMessage,
-          })
-          toast.error("Registration failed", {
-            description: errorMessage,
-          })
+          form.setValue("password", "")
           return
         }
         
-        // Handle other errors
         const errorMessage = 
           (response?.data as any)?.detail || 
           (response?.data as any)?.message || 
-          "An error occurred during registration. Please try again."
+          "An error occurred during login. Please try again."
         
-        toast.error("Registration failed", {
+        toast.error("Login failed", {
           description: errorMessage,
         })
       } else {
-        toast.error("Registration failed", {
+        toast.error("Login failed", {
           description: "An unexpected error occurred. Please try again.",
         })
       }
+      
+      form.setValue("password", "")
     }
   }
 
@@ -147,10 +167,10 @@ export default function RegisterPage() {
       </div>
       <Card className="w-[95%] sm:max-w-md mx-auto lg:mx-auto md:mx-auto">
         <CardHeader>
-          <CardTitle>Register</CardTitle>
+          <CardTitle>Login</CardTitle>
         </CardHeader>
         <CardContent>
-          <form id="register-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <form id="login-form" onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
               <Controller
                 name="email"
@@ -203,14 +223,36 @@ export default function RegisterPage() {
           <Field orientation="horizontal" className="flex justify-center">
             <Button 
               type="submit" 
-              form="register-form"
+              form="login-form"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Registering..." : "Register"}
+              {isSubmitting ? "Logging in..." : "Login"}
             </Button>
           </Field>
         </CardFooter>
       </Card>
     </section>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <section className="grid place-items-center my-[5rem]">
+        <div className="">
+          <h1 className="text-xl font-bold mb-3">AIRTICK</h1>
+        </div>
+        <Card className="w-[95%] sm:max-w-md mx-auto lg:mx-auto md:mx-auto">
+          <CardHeader>
+            <CardTitle>Login</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
+      </section>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

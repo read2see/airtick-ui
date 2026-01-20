@@ -3,10 +3,10 @@
 import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Controller, useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { toast } from "sonner"
-import * as z from "zod"
 import { AxiosError } from "axios"
+import * as z from "zod"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -30,20 +30,16 @@ const formSchema = z.object({
     .string()
     .min(1, "Email is required.")
     .email("Please enter a valid email address."),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters.")
 })
 
-export default function RegisterPage() {
-  const router = useRouter()
+export default function ForgotPasswordPage() {
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [isSuccess, setIsSuccess] = React.useState(false)
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      password: "",
     },
   })
 
@@ -51,45 +47,32 @@ export default function RegisterPage() {
     setIsSubmitting(true)
     
     try {
-      await AuthService.register({
-        email_address: data.email,
-        password: data.password,
+      await AuthService.forgotPassword({
+        email: data.email,
       })
 
-      toast.success("Registration successful!", {
-        description: "Please check your email to verify your account before logging in.",
+      setIsSuccess(true)
+      toast.success("Password reset email sent!", {
+        description: "Please check your email for instructions to reset your password.",
         duration: 5000,
       })
-
-      // Redirect to login page after successful registration
-      setTimeout(() => {
-        router.push("/login")
-      }, 1500)
     } catch (error) {
       setIsSubmitting(false)
       
       if (error instanceof AxiosError) {
         const response = error.response
         
-        // Handle validation errors (422)
         if (response?.status === 422) {
           const errorData = response.data as any
           
-          // Handle field-specific validation errors
           if (errorData?.detail) {
             if (Array.isArray(errorData.detail)) {
-              // Handle array of validation errors
               errorData.detail.forEach((err: any) => {
                 const field = err.loc?.[err.loc.length - 1]
-                if (field === "email_address" || field === "email") {
+                if (field === "email") {
                   form.setError("email", {
                     type: "server",
                     message: err.msg || "Invalid email address.",
-                  })
-                } else if (field === "password") {
-                  form.setError("password", {
-                    type: "server",
-                    message: err.msg || "Invalid password.",
                   })
                 }
               })
@@ -106,38 +89,67 @@ export default function RegisterPage() {
           return
         }
         
-        // Handle email already exists (409 or 400)
-        if (response?.status === 409 || response?.status === 400) {
+        if (response?.status === 404) {
           const errorMessage = 
             (response.data as any)?.detail || 
             (response.data as any)?.message || 
-            "An account with this email already exists."
+            "No account found with this email address."
           
           form.setError("email", {
             type: "server",
             message: errorMessage,
           })
-          toast.error("Registration failed", {
+          toast.error("Email not found", {
             description: errorMessage,
           })
           return
         }
         
-        // Handle other errors
         const errorMessage = 
           (response?.data as any)?.detail || 
           (response?.data as any)?.message || 
-          "An error occurred during registration. Please try again."
+          "An error occurred. Please try again."
         
-        toast.error("Registration failed", {
+        toast.error("Request failed", {
           description: errorMessage,
         })
       } else {
-        toast.error("Registration failed", {
+        toast.error("Request failed", {
           description: "An unexpected error occurred. Please try again.",
         })
       }
     }
+  }
+
+  if (isSuccess) {
+    return (
+      <section className="grid place-items-center my-[5rem]">
+        <div className="">
+          <h1 className="text-xl font-bold mb-3">AIRTICK</h1>
+        </div>
+        <Card className="w-[95%] sm:max-w-md mx-auto lg:mx-auto md:mx-auto">
+          <CardHeader>
+            <CardTitle>Check Your Email</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              We've sent password reset instructions to <strong>{form.getValues("email")}</strong>.
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Please check your email and follow the instructions to reset your password.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              If you don't see the email, check your spam folder or try again.
+            </p>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-2">
+            <Button asChild variant="outline" className="w-full">
+              <Link href="/login">Back to Login</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+      </section>
+    )
   }
 
   return (
@@ -147,10 +159,13 @@ export default function RegisterPage() {
       </div>
       <Card className="w-[95%] sm:max-w-md mx-auto lg:mx-auto md:mx-auto">
         <CardHeader>
-          <CardTitle>Register</CardTitle>
+          <CardTitle>Forgot Password</CardTitle>
         </CardHeader>
         <CardContent>
-          <form id="register-form" onSubmit={form.handleSubmit(onSubmit)}>
+          <p className="text-sm text-muted-foreground mb-4">
+            Enter your email address and we'll send you instructions to reset your password.
+          </p>
+          <form id="forgot-password-form" onSubmit={form.handleSubmit(onSubmit)}>
             <FieldGroup>
               <Controller
                 name="email"
@@ -165,7 +180,7 @@ export default function RegisterPage() {
                       id="email"
                       aria-invalid={fieldState.invalid}
                       placeholder="example@example.com"
-                      autoComplete="off"
+                      autoComplete="email"
                       type="email"
                     />
                     {fieldState.invalid && (
@@ -174,41 +189,21 @@ export default function RegisterPage() {
                   </Field>
                 )}
               />
-              <Controller
-                name="password"
-                control={form.control}
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor="password">
-                      Password
-                    </FieldLabel>
-                    <Input
-                      {...field}
-                      id="password"
-                      aria-invalid={fieldState.invalid}
-                      placeholder="must be at least 8 characters long"
-                      autoComplete="off"
-                      type="password"
-                    />
-                    {fieldState.invalid && (
-                      <FieldError errors={[fieldState.error]}  />
-                    )}
-                  </Field>
-                )}
-              />
             </FieldGroup>
           </form>
         </CardContent>
-        <CardFooter>
-          <Field orientation="horizontal" className="flex justify-center">
-            <Button 
-              type="submit" 
-              form="register-form"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Registering..." : "Register"}
-            </Button>
-          </Field>
+        <CardFooter className="flex flex-col gap-2">
+          <Button 
+            type="submit" 
+            form="forgot-password-form"
+            disabled={isSubmitting}
+            className="w-full"
+          >
+            {isSubmitting ? "Sending..." : "Send Reset Instructions"}
+          </Button>
+          <Button asChild variant="ghost" className="w-full">
+            <Link href="/login">Back to Login</Link>
+          </Button>
         </CardFooter>
       </Card>
     </section>
