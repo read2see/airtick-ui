@@ -19,6 +19,9 @@ export const API_ROUTES = {
   users: {
     updateProfile: "/api/users/me/profile",
     uploadProfileImage: "/api/users/me/profile/upload",
+    search: "/auth/users/search",
+    byId: (userId: number | string) => `/auth/users/${userId}`,
+    reactivate: (userId: number | string) => `/auth/users/${userId}/reactivate`,
   },
 
   airports: {

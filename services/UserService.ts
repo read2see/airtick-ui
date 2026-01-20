@@ -1,11 +1,20 @@
 import { apiClient } from "@/lib/apiClient";
 import { API_ROUTES } from "@/lib/apiRoutes";
 import { AuthenticatedUserResponse } from "@/types/auth";
+import { UserResponse } from "@/types/user";
+import { PaginatedResponse } from "@/types/pagination";
+import { PaginationParams } from "@/types/PaginationParams";
 
 export interface UpdateProfileRequest {
   first_name?: string;
   last_name?: string;
   profile_img?: string;
+}
+
+export interface UserSearchParams extends PaginationParams {
+  id?: number;
+  email?: string;
+  search?: string;
 }
 
 export const UserService = {
@@ -15,6 +24,57 @@ export const UserService = {
    */
   async getProfile(): Promise<AuthenticatedUserResponse> {
     const { data } = await apiClient.get(API_ROUTES.auth.me);
+    return data;
+  },
+
+  /**
+   * Get paginated list of users
+   * GET /auth/users/search
+   */
+  async getUsers(
+    params?: UserSearchParams
+  ): Promise<PaginatedResponse<UserResponse>> {
+    const response = await apiClient.get(API_ROUTES.users.search, {
+      params,
+    });
+    const data = response.data;
+
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      if (data.data && Array.isArray(data.data)) {
+        return data;
+      }
+      if (data.data && typeof data.data === "object" && !Array.isArray(data.data)) {
+        const usersArray = Object.values(data.data).filter(
+          (item): item is UserResponse => typeof item === "object" && item !== null && "id" in item
+        ) as UserResponse[];
+        return {
+          data: usersArray,
+          meta: data.meta || {
+            currentPage: 0,
+            perPage: 10,
+            total: usersArray.length,
+            totalPages: 1,
+            nextPage: null,
+            prevPage: null,
+          },
+        };
+      }
+      const usersArray = Object.values(data).filter(
+        (item): item is UserResponse => typeof item === "object" && item !== null && "id" in item
+      ) as UserResponse[];
+      return {
+        data: usersArray,
+        meta: data.meta || {
+          currentPage: 0,
+          perPage: 10,
+          total: usersArray.length,
+          totalPages: 1,
+          nextPage: null,
+          prevPage: null,
+        },
+      };
+    }
+
     return data;
   },
 
@@ -56,5 +116,21 @@ export const UserService = {
       },
     });
     return data;
+  },
+
+  /**
+   * Reactivate user
+   * PATCH /auth/users/:userId/reactivate
+   */
+  async reactivateUser(userId: number | string): Promise<void> {
+    await apiClient.patch(API_ROUTES.users.reactivate(userId));
+  },
+
+  /**
+   * Delete user (soft delete)
+   * DELETE /auth/users/:userId
+   */
+  async deleteUser(userId: number | string): Promise<void> {
+    await apiClient.delete(API_ROUTES.users.byId(userId));
   },
 };
