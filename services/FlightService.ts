@@ -1,0 +1,64 @@
+import { apiClient } from "@/lib/apiClient";
+import { API_ROUTES } from "@/lib/apiRoutes";
+import { FlightResponse } from "@/types/flight";
+import { PaginatedResponse } from "@/types/pagination";
+import { PaginationParams } from "@/types/PaginationParams";
+
+export interface FlightSearchParams extends PaginationParams {
+  id?: number;
+  flightNo?: string;
+  originAirportId?: number;
+  originAirportName?: string;
+  destinationAirportId?: number;
+  destinationAirportName?: string;
+  price?: number;
+  search?: string;
+}
+
+export const FlightService = {
+  /**
+   * Get paginated list of flights
+   * GET /api/flights
+   */
+  async getFlights(
+    params?: FlightSearchParams
+  ): Promise<PaginatedResponse<FlightResponse>> {
+    const response = await apiClient.get(API_ROUTES.flights.base, {
+      params,
+    });
+    const data = response.data;
+    
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      if (data.data && Array.isArray(data.data)) {
+        return data;
+      }
+      const flightsArray = Object.values(data).filter(
+        (item): item is FlightResponse => typeof item === "object" && item !== null && "id" in item
+      ) as FlightResponse[];
+      return {
+        data: flightsArray,
+        meta: data.meta || {
+          currentPage: 0,
+          perPage: 10,
+          total: flightsArray.length,
+          totalPages: 1,
+          nextPage: null,
+          prevPage: null,
+        },
+      };
+    }
+    
+    return data;
+  },
+
+  /**
+   * Get flight by ID
+   * GET /api/flights/:id
+   */
+  async getFlightById(
+    flightId: number | string
+  ): Promise<FlightResponse> {
+    const { data } = await apiClient.get(API_ROUTES.flights.byId(flightId));
+    return data;
+  },
+};
