@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input"
 import { UserService, UpdateProfileRequest } from "@/services/UserService"
 import { AuthenticatedUserResponse } from "@/types/auth"
 import { useAuth } from "@/contexts/AuthContext"
+import { getImagePath } from "@/lib/imageUtils"
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required."),
@@ -44,6 +45,7 @@ export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
     user.profile_img || null
   )
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+  const profileImageUrl = React.useMemo(() => getImagePath(profileImagePreview), [profileImagePreview])
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -235,21 +237,6 @@ export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
     }
   }
 
-  const getImageUrl = () => {
-    if (profileImagePreview) {
-      // If it's a data URL (preview), return as is
-      if (profileImagePreview.startsWith("data:")) {
-        return profileImagePreview
-      }
-      // Prefix with API URL for profile images
-      const apiUrl = process.env.NEXT_PUBLIC_REST_API_URL
-      if (apiUrl) {
-        return `${apiUrl}/api/images/${profileImagePreview}`
-      }
-      return `/api/images/${profileImagePreview}`
-    }
-    return null
-  }
 
   return (
     <Card>
@@ -260,10 +247,10 @@ export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
         {/* Profile Image Upload */}
         <div className="mb-6 flex items-center gap-4">
           <div className="relative">
-            {getImageUrl() ? (
+            {profileImageUrl ? (
               <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-border">
                 <Image
-                  src={getImageUrl()!}
+                  src={profileImageUrl}
                   alt="Profile"
                   fill
                   className="object-cover"
