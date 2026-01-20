@@ -20,7 +20,7 @@ export default function AdminAirportsPage() {
   const [searchValue, setSearchValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [perPage] = useState(10);
+  const [perPage, setPerPage] = useState(10);
   const [total, setTotal] = useState(0);
   const [nextPage, setNextPage] = useState<number | null>(null);
   const [prevPage, setPrevPage] = useState<number | null>(null);
@@ -113,6 +113,11 @@ export default function AdminAirportsPage() {
     setCurrentPage(page);
   };
 
+  const handlePerPageChange = (newPerPage: number) => {
+    setPerPage(newPerPage);
+    setCurrentPage(1);
+  };
+
   const handleSort = (column: string, direction: "asc" | "desc") => {
     setSortColumn(column);
     setSortDirection(direction);
@@ -175,6 +180,8 @@ export default function AdminAirportsPage() {
           nextPage,
           prevPage,
           onPageChange: handlePageChange,
+          onPerPageChange: handlePerPageChange,
+          pageSizeOptions: [10, 25, 50, 100],
         }}
         sorting={{
           column: sortColumn,

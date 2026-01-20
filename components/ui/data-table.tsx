@@ -46,6 +46,8 @@ interface DataTableProps<T> {
     nextPage: number | null;
     prevPage: number | null;
     onPageChange: (page: number) => void;
+    onPerPageChange?: (perPage: number) => void;
+    pageSizeOptions?: number[];
   };
   sorting?: {
     column: string | null;
@@ -155,18 +157,42 @@ export function DataTable<T extends Record<string, any>>({
 
       {pagination && (
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm text-muted-foreground">
-            {pagination.total > 0 && pagination.perPage > 0 && pagination.currentPage > 0 ? (
-              <>
-                Showing {((pagination.currentPage - 1) * pagination.perPage) + 1} to{" "}
-                {Math.min(
-                  pagination.currentPage * pagination.perPage,
-                  pagination.total
-                )}{" "}
-                of {pagination.total} results
-              </>
-            ) : (
-              "No results"
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-muted-foreground">
+              {pagination.total > 0 && pagination.perPage > 0 && pagination.currentPage > 0 ? (
+                <>
+                  Showing {((pagination.currentPage - 1) * pagination.perPage) + 1} to{" "}
+                  {Math.min(
+                    pagination.currentPage * pagination.perPage,
+                    pagination.total
+                  )}{" "}
+                  of {pagination.total} results
+                </>
+              ) : (
+                "No results"
+              )}
+            </div>
+            {pagination.onPerPageChange && (
+              <div className="flex items-center gap-2">
+                <label htmlFor="page-size" className="text-sm text-muted-foreground">
+                  Rows per page:
+                </label>
+                <select
+                  id="page-size"
+                  value={pagination.perPage}
+                  onChange={(e) => {
+                    const newPerPage = Number(e.target.value);
+                    pagination.onPerPageChange?.(newPerPage);
+                  }}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-sm shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] outline-none"
+                >
+                  {(pagination.pageSizeOptions || [10, 25, 50, 100]).map((size) => (
+                    <option key={size} value={size}>
+                      {size}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
           </div>
           <Pagination>
