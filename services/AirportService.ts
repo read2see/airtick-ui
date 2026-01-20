@@ -5,7 +5,8 @@ import { PaginatedResponse } from "@/types/pagination";
 import { PaginationParams } from "@/types/PaginationParams";
 
 export interface AirportSearchParams extends PaginationParams {
-  search?: string; // Search by name, code, or country
+  search?: string;
+  country?: string;
 }
 
 export interface CreateAirportRequest {
