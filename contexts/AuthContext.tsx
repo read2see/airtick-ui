@@ -19,7 +19,7 @@ interface AuthContextType {
   loading: boolean
   login: (email: string, password: string, redirectPath?: string | null) => Promise<void>
   logout: () => Promise<void>
-  fetchUser: () => Promise<void>
+  fetchUser: (force?: boolean) => Promise<void>
   isAuthenticated: boolean
   hasRole: (role: UserRole) => boolean
   isAdmin: () => boolean
@@ -36,9 +36,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isFetchingRef = React.useRef(false)
   const hasFetchedRef = React.useRef(false)
 
-  const fetchUser = React.useCallback(async () => {
-    // Prevent multiple simultaneous fetches
-    if (isFetchingRef.current || hasFetchedRef.current) {
+  const fetchUser = React.useCallback(async (force = false) => {
+    // Prevent multiple simultaneous fetches unless forced
+    if (!force && (isFetchingRef.current || hasFetchedRef.current)) {
       return
     }
 
@@ -100,10 +100,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const loginResponse = await AuthService.login({ email, password })
       
-      const userData: AuthenticatedUserResponse = {
-        id: loginResponse.id,
-        role: loginResponse.role,
+      // Store token from login response for Authorization header
+      if (loginResponse.token && typeof window !== "undefined") {
+        sessionStorage.setItem("auth_token", loginResponse.token)
       }
+      
+      // Fetch full user profile after login
+      const userData = await AuthService.me()
       
       setUser(userData)
       hasFetchedRef.current = true
@@ -120,6 +123,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null)
     hasFetchedRef.current = false
     setLoading(false)
+    
+    // Clear stored token
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("auth_token")
+    }
     
     try {
       await AuthService.logout()
