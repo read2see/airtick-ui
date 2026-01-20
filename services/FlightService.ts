@@ -100,4 +100,12 @@ export const FlightService = {
     );
     return data;
   },
+
+  /**
+   * Delete flight
+   * DELETE /api/flights/:id
+   */
+  async deleteFlight(flightId: number | string): Promise<void> {
+    await apiClient.delete(API_ROUTES.flights.byId(flightId));
+  },
 };

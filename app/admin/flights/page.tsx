@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { FlightTable } from "@/components/admin/FlightTable";
 import { CreateFlightDialog } from "@/components/admin/CreateFlightDialog";
 import { EditFlightDialog } from "@/components/admin/EditFlightDialog";
+import { DeleteFlightDialog } from "@/components/admin/DeleteFlightDialog";
 import { FlightService, FlightSearchParams } from "@/services/FlightService";
 import { AirportService } from "@/services/AirportService";
 import { FlightResponse } from "@/types/flight";
@@ -23,6 +24,7 @@ export default function AdminFlightsPage() {
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState<FlightResponse | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -139,10 +141,8 @@ export default function AdminFlightsPage() {
   };
 
   const handleDelete = (flight: FlightResponse) => {
-    // TODO: Implement delete functionality
-    toast.info("Delete functionality coming soon", {
-      description: `Delete flight ${flight.id}`,
-    });
+    setSelectedFlight(flight);
+    setDeleteDialogOpen(true);
   };
 
   const handleView = (flight: FlightResponse) => {
@@ -161,6 +161,11 @@ export default function AdminFlightsPage() {
   };
 
   const handleEditSuccess = () => {
+    fetchFlights();
+    setSelectedFlight(null);
+  };
+
+  const handleDeleteSuccess = () => {
     fetchFlights();
     setSelectedFlight(null);
   };
@@ -225,6 +230,19 @@ export default function AdminFlightsPage() {
         flight={selectedFlight}
         airports={airportsList}
         onSuccess={handleEditSuccess}
+      />
+
+      <DeleteFlightDialog
+        open={deleteDialogOpen}
+        onOpenChange={(open) => {
+          setDeleteDialogOpen(open);
+          if (!open) {
+            setSelectedFlight(null);
+          }
+        }}
+        flight={selectedFlight}
+        airports={airports}
+        onSuccess={handleDeleteSuccess}
       />
     </div>
   );
