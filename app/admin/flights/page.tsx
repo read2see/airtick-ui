@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useEffect, useState, useCallback } from "react";
 import { FlightTable } from "@/components/admin/FlightTable";
+import { CreateFlightDialog } from "@/components/admin/CreateFlightDialog";
 import { FlightService, FlightSearchParams } from "@/services/FlightService";
 import { AirportService } from "@/services/AirportService";
 import { FlightResponse } from "@/types/flight";
@@ -17,7 +18,9 @@ export default function AdminFlightsPage() {
   const [airports, setAirports] = useState<Map<number, AirportResponse>>(
     new Map()
   );
+  const [airportsList, setAirportsList] = useState<AirportResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -92,6 +95,7 @@ export default function AdminFlightsPage() {
           airportMap.set(airport.id, airport);
         });
         setAirports(airportMap);
+        setAirportsList(response.data);
       } catch (error) {
         // Silently fail - airport lookup is optional
       }
@@ -148,10 +152,11 @@ export default function AdminFlightsPage() {
   };
 
   const handleCreate = () => {
-    // TODO: Implement create functionality
-    toast.info("Create functionality coming soon", {
-      description: "Create a new flight",
-    });
+    setCreateDialogOpen(true);
+  };
+
+  const handleCreateSuccess = () => {
+    fetchFlights();
   };
 
   return (
@@ -194,6 +199,13 @@ export default function AdminFlightsPage() {
           direction: sortDirection,
           onSort: handleSort,
         }}
+      />
+
+      <CreateFlightDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+        airports={airportsList}
+        onSuccess={handleCreateSuccess}
       />
     </div>
   );

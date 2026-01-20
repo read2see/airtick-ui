@@ -15,6 +15,14 @@ export interface FlightSearchParams extends PaginationParams {
   search?: string;
 }
 
+export interface CreateFlightRequest {
+  origin_airport_id: number;
+  destination_airport_id: number;
+  departure_time: string;
+  arrival_time: string;
+  price: number;
+}
+
 export const FlightService = {
   /**
    * Get paginated list of flights
@@ -59,6 +67,20 @@ export const FlightService = {
     flightId: number | string
   ): Promise<FlightResponse> {
     const { data } = await apiClient.get(API_ROUTES.flights.byId(flightId));
+    return data;
+  },
+
+  /**
+   * Create new flight
+   * POST /api/flights
+   */
+  async createFlight(
+    payload: CreateFlightRequest
+  ): Promise<FlightResponse> {
+    const { data } = await apiClient.post(
+      API_ROUTES.flights.base,
+      payload
+    );
     return data;
   },
 };

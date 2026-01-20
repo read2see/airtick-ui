@@ -41,8 +41,10 @@ apiClient.interceptors.response.use(
             const isAdminApiEndpoint = error.config?.url?.includes("/api/admin");
             // Don't redirect for logout endpoint - let the logout handler manage navigation
             const isLogoutEndpoint = error.config?.url?.includes("/auth/users/logout");
+            // Don't redirect for flights endpoint - let the component handle the error
+            const isFlightsEndpoint = error.config?.url?.includes("/flights");
             
-            if (!isAuthPage && !isAuthCheckEndpoint && !isAdminApiEndpoint && !isLogoutEndpoint) {
+            if (!isAuthPage && !isAuthCheckEndpoint && !isAdminApiEndpoint && !isLogoutEndpoint && !isFlightsEndpoint) {
                 window.location.href = "/login";
             }
         }
