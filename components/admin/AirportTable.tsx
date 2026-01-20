@@ -42,7 +42,7 @@ export function AirportTable({
     
     if (onEdit) {
       actions.push({
-        label: "Update",
+        label: "Edit",
         icon: Edit,
         onClick: onEdit,
         variant: "default",
