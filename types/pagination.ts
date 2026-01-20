@@ -1,11 +1,11 @@
 export interface PaginatedResponse<T> {
     data: T[],
     meta: {
-        current_page: number,
-        per_page: number,
+        currentPage: number,
+        perPage: number,
         total: number,
-        total_pages: number,
-        next_page: string|null,
-        prev_page: string|null
+        totalPages: number,
+        nextPage: number | null,
+        prevPage: number | null
     }
 }
