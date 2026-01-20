@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { AirportTable } from "@/components/admin/AirportTable";
 import { CreateAirportDialog } from "@/components/admin/CreateAirportDialog";
 import { UpdateAirportDialog } from "@/components/admin/UpdateAirportDialog";
+import { DeleteAirportDialog } from "@/components/admin/DeleteAirportDialog";
 import { AirportService, AirportSearchParams } from "@/services/AirportService";
 import { AirportResponse } from "@/types/airport";
 import { PaginatedResponse } from "@/types/pagination";
@@ -29,6 +30,7 @@ export default function AdminAirportsPage() {
   );
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedAirport, setSelectedAirport] = useState<AirportResponse | null>(null);
 
   const fetchAirports = useCallback(async () => {
@@ -122,37 +124,9 @@ export default function AdminAirportsPage() {
     setUpdateDialogOpen(true);
   };
 
-  const handleDelete = async (airport: AirportResponse) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete ${airport.name} (${airport.code})? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
-
-    try {
-      await AirportService.deleteAirport(airport.id);
-      toast.success("Airport deleted", {
-        description: `${airport.name} has been deleted successfully.`,
-      });
-      fetchAirports();
-    } catch (error) {
-      console.error("Failed to delete airport:", error);
-      if (error instanceof AxiosError) {
-        const errorMessage =
-          (error.response?.data as any)?.detail ||
-          (error.response?.data as any)?.message ||
-          "Failed to delete airport";
-        toast.error("Error", {
-          description: errorMessage,
-        });
-      } else {
-        toast.error("Error", {
-          description: "An unexpected error occurred while deleting the airport.",
-        });
-      }
-    }
+  const handleDelete = (airport: AirportResponse) => {
+    setSelectedAirport(airport);
+    setDeleteDialogOpen(true);
   };
 
   const handleCreate = () => {
@@ -164,6 +138,10 @@ export default function AdminAirportsPage() {
   };
 
   const handleUpdateSuccess = () => {
+    fetchAirports();
+  };
+
+  const handleDeleteSuccess = () => {
     fetchAirports();
   };
 
@@ -216,6 +194,13 @@ export default function AdminAirportsPage() {
         onOpenChange={setUpdateDialogOpen}
         airport={selectedAirport}
         onSuccess={handleUpdateSuccess}
+      />
+
+      <DeleteAirportDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        airport={selectedAirport}
+        onSuccess={handleDeleteSuccess}
       />
     </div>
   );
