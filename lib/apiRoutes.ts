@@ -51,6 +51,7 @@ export const API_ROUTES = {
 
   flights: {
     base: "/api/flights",
+    browse: "/api/flights/browse",
 
     byId: (flightId: number | string) =>
       `/api/flights/${flightId}`,

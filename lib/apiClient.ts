@@ -43,12 +43,14 @@ apiClient.interceptors.response.use(
             const isLogoutEndpoint = error.config?.url?.includes("/auth/users/logout");
             // Don't redirect for flights endpoint - let the component handle the error
             const isFlightsEndpoint = error.config?.url?.includes("/flights");
+            // Don't redirect for bookings endpoint - let the component handle the error
+            const isBookingsEndpoint = error.config?.url?.includes("/bookings");
             // Don't redirect for users endpoints - let the component handle the error
             const isUsersEndpoint = error.config?.url?.includes("/auth/users/") && 
               (error.config?.url?.includes("/auth/users/search") || 
                error.config?.url?.match(/\/auth\/users\/\d+$/));
             
-            if (!isAuthPage && !isAuthCheckEndpoint && !isAdminApiEndpoint && !isLogoutEndpoint && !isFlightsEndpoint && !isUsersEndpoint) {
+            if (!isAuthPage && !isAuthCheckEndpoint && !isAdminApiEndpoint && !isLogoutEndpoint && !isFlightsEndpoint && !isBookingsEndpoint && !isUsersEndpoint) {
                 window.location.href = "/login";
             }
         }
