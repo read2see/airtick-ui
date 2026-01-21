@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { BookingService } from "@/services/BookingService"
 import { Booking, BookingResponse } from "@/types/booking"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -92,9 +93,13 @@ export function BookingsList({ initialBookings }: BookingsListProps) {
           <CardTitle>Booking History</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            You don't have any bookings yet.
-          </p>
+          <div className="flex flex-col items-center gap-4 py-4">
+            <Link href="/customer/bookings">
+              <Button variant="outline">
+                View Booking History
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
     )
