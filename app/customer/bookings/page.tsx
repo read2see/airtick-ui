@@ -12,9 +12,11 @@ import { AirportResponse } from "@/types/airport";
 import { PaginationParams } from "@/types/PaginationParams";
 import { toast } from "sonner";
 import { AxiosError } from "axios";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function CustomerBookingsPage() {
   const router = useRouter();
+  const { user } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [airports, setAirports] = useState<Map<number, AirportResponse>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -62,6 +64,11 @@ export default function CustomerBookingsPage() {
   }, []);
 
   const fetchBookings = useCallback(async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const params: PaginationParams = {
@@ -78,7 +85,7 @@ export default function CustomerBookingsPage() {
         params.sort = `${sortParam},${sortDirection}`;
       }
 
-      const response = await BookingService.getUserBookings(params);
+      const response = await BookingService.getUserBookings(user.id, params);
 
       if (!response || !response.data || !response.meta) {
         throw new Error("Invalid response structure from API");
@@ -109,7 +116,7 @@ export default function CustomerBookingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, perPage, searchValue, sortColumn, sortDirection]);
+  }, [user?.id, currentPage, perPage, searchValue, sortColumn, sortDirection]);
 
   useEffect(() => {
     fetchBookings();

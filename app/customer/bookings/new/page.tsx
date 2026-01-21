@@ -169,12 +169,7 @@ export default function NewBookingPage() {
           : 0;
 
       const booking = await BookingService.createBooking({
-        flight: {
-          id: parseInt(flightId),
-          price: priceValue,
-          departure_time: flight.departure_time ?? flight.departureTime ?? "",
-          arrival_time: flight.arrival_time ?? flight.arrivalTime ?? "",
-        },
+        flight_id: parseInt(flightId),
         status: "PENDING",
       });
 
