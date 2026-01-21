@@ -127,7 +127,6 @@ export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
-      // Create preview
       const reader = new FileReader()
       reader.onloadend = () => {
         setProfileImagePreview(reader.result as string)
@@ -152,7 +151,6 @@ export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
         payload.last_name = data.lastName
       }
 
-      // Only update if something has changed
       if (Object.keys(payload).length === 0) {
         toast.info("No changes to save")
         setIsSubmitting(false)
@@ -166,21 +164,17 @@ export function ProfileForm({ user, onUpdate }: ProfileFormProps) {
         duration: 3000,
       })
 
-      // Update form state with new values from API response
       form.reset({
         firstName: updatedUser.first_name || "",
         lastName: updatedUser.last_name || "",
       })
       
-      // Update preview if profile image changed
       if (updatedUser.profile_img) {
         setProfileImagePreview(updatedUser.profile_img)
       }
 
-      // Update auth context with new user data (force refresh)
       await fetchUser(true)
 
-      // Call onUpdate callback to update parent component
       if (onUpdate) {
         onUpdate(updatedUser)
       }

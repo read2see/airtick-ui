@@ -1,16 +1,17 @@
+import { FlightResponse } from "./flight";
+
 export interface Booking {
   id: number;
+  user_id?: number;
+  userId?: number;
+  status: "CONFIRMED" | "PENDING" | "CANCELLED" | string;
+  booked_at?: string;
+  bookedAt?: string;
+  updated_at?: string;
+  updatedAt?: string;
+  flight?: FlightResponse;
   flightId?: number;
-  flightNumber?: string;
-  origin?: string;
-  destination?: string;
-  departureDate?: string;
-  arrivalDate?: string;
-  status: string;
-  totalPrice?: number;
-  bookingDate?: string;
-  passengers?: Passenger[];
-  [key: string]: any; // Allow for additional fields
+  [key: string]: any;
 }
 
 export interface Passenger {
