@@ -4,12 +4,13 @@ import * as React from "react";
 import { UserResponse } from "@/types/user";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { TableActions, TableAction } from "@/components/admin/TableActions";
-import { Trash2 } from "lucide-react";
+import { Trash2, RotateCcw } from "lucide-react";
 
 interface UserTableProps {
   users: UserResponse[];
   loading?: boolean;
   onDelete?: (user: UserResponse) => void;
+  onReactivate?: (user: UserResponse) => void;
   searchValue?: string;
   onSearch?: (value: string) => void;
   pagination?: {
@@ -34,6 +35,7 @@ export function UserTable({
   users,
   loading = false,
   onDelete,
+  onReactivate,
   searchValue = "",
   onSearch,
   pagination,
@@ -41,13 +43,20 @@ export function UserTable({
 }: UserTableProps) {
   const getActions = (row: UserResponse): TableAction<UserResponse>[] => {
     const actions: TableAction<UserResponse>[] = [];
+    const isActive = row.active !== false;
     
-    if (onDelete) {
+    if (isActive && onDelete) {
       actions.push({
         label: "Delete",
         icon: Trash2,
         onClick: onDelete,
         variant: "destructive",
+      });
+    } else if (!isActive && onReactivate) {
+      actions.push({
+        label: "Reactivate",
+        icon: RotateCcw,
+        onClick: onReactivate,
       });
     }
     

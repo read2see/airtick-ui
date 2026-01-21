@@ -4,6 +4,7 @@ import * as React from "react";
 import { useEffect, useState, useCallback } from "react";
 import { UserTable } from "@/components/admin/UserTable";
 import { DeleteUserDialog } from "@/components/admin/DeleteUserDialog";
+import { ReactivateUserDialog } from "@/components/admin/ReactivateUserDialog";
 import { UserService, UserSearchParams } from "@/services/UserService";
 import { UserResponse } from "@/types/user";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [reactivateDialogOpen, setReactivateDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [searchValue, setSearchValue] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -111,6 +113,16 @@ export default function AdminUsersPage() {
     setSelectedUser(null);
   };
 
+  const handleReactivate = (user: UserResponse) => {
+    setSelectedUser(user);
+    setReactivateDialogOpen(true);
+  };
+
+  const handleReactivateSuccess = () => {
+    fetchUsers();
+    setSelectedUser(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -126,6 +138,7 @@ export default function AdminUsersPage() {
         users={users}
         loading={loading}
         onDelete={handleDelete}
+        onReactivate={handleReactivate}
         searchValue={searchValue}
         onSearch={handleSearch}
         pagination={{
@@ -156,6 +169,18 @@ export default function AdminUsersPage() {
         }}
         user={selectedUser}
         onSuccess={handleDeleteSuccess}
+      />
+
+      <ReactivateUserDialog
+        open={reactivateDialogOpen}
+        onOpenChange={(open) => {
+          setReactivateDialogOpen(open);
+          if (!open) {
+            setSelectedUser(null);
+          }
+        }}
+        user={selectedUser}
+        onSuccess={handleReactivateSuccess}
       />
     </div>
   );

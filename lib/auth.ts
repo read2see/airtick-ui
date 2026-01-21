@@ -41,7 +41,7 @@ export function getDefaultRedirectPath(role: UserRole | undefined): string {
     case "ADMIN":
       return "/admin/dashboard";
     case "CUSTOMER":
-      return "/profile";
+      return "/browse-flights";
     default:
       return "/";
   }
