@@ -8,6 +8,7 @@ import { toast } from "sonner"
 import * as z from "zod"
 import { AxiosError } from "axios"
 
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -193,7 +194,15 @@ export default function RegisterPage() {
             </FieldGroup>
           </form>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-4 items-start">
+          <div className="flex flex-col gap-2">
+            <Link 
+              href="/login" 
+              className="text-sm text-primary hover:underline"
+            >
+              Already have an account?
+            </Link>
+          </div>
           <Field orientation="horizontal" className="flex justify-center">
             <Button 
               type="submit" 

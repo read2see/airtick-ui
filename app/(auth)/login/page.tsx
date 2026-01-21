@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { AxiosError } from "axios"
 import * as z from "zod"
 
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -52,14 +53,11 @@ function LoginForm() {
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsSubmitting(true)
     
-    // Get redirect parameter from URL query string
     const redirectPath = searchParams.get("redirect")
     
     try {
       await login(data.email, data.password, redirectPath)
       
-      // Login successful - redirect will happen via window.location
-      // Don't reset isSubmitting as page will navigate away
       toast.success("Login successful!", {
         description: "Redirecting to your dashboard...",
         duration: 2000,
@@ -219,7 +217,21 @@ function LoginForm() {
             </FieldGroup>
           </form>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-4 items-start">
+          <div className="flex flex-col gap-2">
+            <Link 
+              href="/forgot-password" 
+              className="text-sm text-primary hover:underline"
+            >
+              Forgot password?
+            </Link>
+            <Link 
+              href="/register" 
+              className="text-sm text-primary hover:underline"
+            >
+              Not registered?
+            </Link>
+          </div>
           <Field orientation="horizontal" className="flex justify-center">
             <Button 
               type="submit" 
