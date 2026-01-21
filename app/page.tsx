@@ -28,11 +28,13 @@ export default function Home() {
           </p>
         </div>
         <div className="flex flex-col items-center gap-4 w-full max-w-xs">
-          <Link href="/browse-flights" className="w-full">
-            <Button size="lg" className="w-full border-2 border-primary bg-primary hover:bg-primary/90 font-semibold ring-2 ring-primary/50 ring-offset-2 ring-offset-background">
-              Browse Flights
-            </Button>
-          </Link>
+          {isAuthenticated && (
+            <Link href="/browse-flights" className="w-full">
+              <Button size="lg" className="w-full border-2 border-primary bg-primary hover:bg-primary/90 font-semibold ring-2 ring-primary/50 ring-offset-2 ring-offset-background">
+                Browse Flights
+              </Button>
+            </Link>
+          )}
           {!isAuthenticated && (
             <div className="flex gap-3 w-full">
               <Link href="/login" className="flex-1">
