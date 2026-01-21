@@ -35,18 +35,30 @@ export function CancelBookingDialog({
   const handleCancel = async () => {
     if (!booking) return;
 
-    const flightId = booking.flight?.id || booking.flightId;
-    if (!flightId) {
+    const flight = booking.flight;
+    if (!flight || !flight.id) {
       toast.error("Error", {
-        description: "Cannot cancel booking: Flight ID is missing.",
+        description: "Cannot cancel booking: Flight information is missing.",
       });
       return;
     }
 
+    const priceValue =
+      typeof flight.price === "object" && flight.price !== null && "parsedValue" in flight.price
+        ? flight.price.parsedValue
+        : typeof flight.price === "number"
+        ? flight.price
+        : 0;
+
     setIsCancelling(true);
 
     try {
-      await BookingService.cancelBooking(booking.id, flightId);
+      await BookingService.cancelBooking(booking.id, {
+        id: flight.id,
+        price: priceValue,
+        departure_time: flight.departure_time ?? flight.departureTime ?? "",
+        arrival_time: flight.arrival_time ?? flight.arrivalTime ?? "",
+      });
       
       const flight = booking.flight;
       const route = flight

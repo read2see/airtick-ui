@@ -5,7 +5,12 @@ import { PaginationParams } from "@/types/PaginationParams";
 import { PaginatedResponse } from "@/types/pagination";
 
 export interface CreateBookingRequest {
-  flight_id: number;
+  flight: {
+    id: number;
+    price: number;
+    departure_time: string;
+    arrival_time: string;
+  };
   status?: "CONFIRMED" | "PENDING" | "CANCELLED";
 }
 
@@ -26,7 +31,16 @@ export const BookingService = {
    * POST /api/bookings
    */
   async createBooking(payload: CreateBookingRequest): Promise<BookingResponseData> {
-    const { data } = await apiClient.post(API_ROUTES.bookings.base, payload);
+    const requestPayload = {
+      flight: {
+        id: payload.flight.id,
+        price: payload.flight.price,
+        departure_time: payload.flight.departure_time,
+        arrival_time: payload.flight.arrival_time,
+      },
+      status: payload.status,
+    };
+    const { data } = await apiClient.post(API_ROUTES.bookings.base, requestPayload);
     return data;
   },
 
@@ -38,7 +52,16 @@ export const BookingService = {
     bookingId: number | string,
     payload: UpdateBookingRequest
   ): Promise<BookingResponseData> {
-    const { data } = await apiClient.put(API_ROUTES.bookings.byId(bookingId), payload);
+    const requestPayload = {
+      flight: {
+        id: payload.flight.id,
+        price: payload.flight.price,
+        departure_time: payload.flight.departure_time,
+        arrival_time: payload.flight.arrival_time,
+      },
+      status: payload.status,
+    };
+    const { data } = await apiClient.put(API_ROUTES.bookings.byId(bookingId), requestPayload);
     return data;
   },
 
@@ -115,9 +138,17 @@ export const BookingService = {
    * Cancel booking (update status to CANCELLED)
    * PUT /api/bookings/{bookingId}
    */
-  async cancelBooking(bookingId: number | string, flightId: number): Promise<BookingResponseData> {
+  async cancelBooking(
+    bookingId: number | string,
+    flight: { id: number; price: number; departure_time: string; arrival_time: string }
+  ): Promise<BookingResponseData> {
     const requestPayload = {
-      flight_id: flightId,
+      flight: {
+        id: flight.id,
+        price: flight.price,
+        departure_time: flight.departure_time,
+        arrival_time: flight.arrival_time,
+      },
       status: "CANCELLED" as const,
     };
     const { data } = await apiClient.put(API_ROUTES.bookings.byId(bookingId), requestPayload);

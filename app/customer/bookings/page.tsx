@@ -32,6 +32,15 @@ export default function CustomerBookingsPage() {
     null
   );
 
+  const columnToSortParam: Record<string, string> = {
+    id: "id",
+    departureDate: "flight.departureTime",
+    arrivalDate: "flight.arrivalTime",
+    totalPrice: "flight.price",
+    bookingDate: "bookedAt",
+    status: "status",
+  };
+
   useEffect(() => {
     const fetchAirports = async () => {
       try {
@@ -65,7 +74,8 @@ export default function CustomerBookingsPage() {
       }
 
       if (sortColumn && sortDirection) {
-        params.sort = `${sortColumn},${sortDirection}`;
+        const sortParam = columnToSortParam[sortColumn] || sortColumn;
+        params.sort = `${sortParam},${sortDirection}`;
       }
 
       const response = await BookingService.getUserBookings(params);

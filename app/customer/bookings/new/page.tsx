@@ -161,8 +161,20 @@ export default function NewBookingPage() {
     setSubmitting(true);
 
     try {
+      const priceValue =
+        typeof flight.price === "object" && flight.price !== null && "parsedValue" in flight.price
+          ? flight.price.parsedValue
+          : typeof flight.price === "number"
+          ? flight.price
+          : 0;
+
       const booking = await BookingService.createBooking({
-        flightId: parseInt(flightId),
+        flight: {
+          id: parseInt(flightId),
+          price: priceValue,
+          departure_time: flight.departure_time ?? flight.departureTime ?? "",
+          arrival_time: flight.arrival_time ?? flight.arrivalTime ?? "",
+        },
         status: "PENDING",
       });
 
