@@ -9,17 +9,17 @@ export interface DashboardStats {
 }
 
 export const AdminService = {
-  /**
-   * Get dashboard statistics
-   * GET /api/admin/stats (or similar endpoint)
-   */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
       const { data } = await apiClient.get(API_ROUTES.admin.stats);
-      return data;
+      // Map snake_case API response to camelCase interface
+      return {
+        totalBookings: data.total_bookings ?? 0,
+        totalFlights: data.total_flights ?? 0,
+        totalUsers: data.total_users ?? 0,
+        totalRevenue: data.total_revenue ?? 0,
+      };
     } catch (error) {
-      // If endpoint doesn't exist yet, return mock data
-      // This allows the UI to work while the backend is being developed
       console.warn("Admin stats endpoint not available, using mock data");
       return {
         totalBookings: 0,
