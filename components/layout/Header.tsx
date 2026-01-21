@@ -36,7 +36,7 @@ const authenticatedNavItems: NavItem[] = [
   },
   {
     title: "Browse Flights",
-    href: "/customer/flights",
+    href: "/browse-flights",
     icon: Plane,
     requiresAuth: true,
     roles: ["CUSTOMER"],
