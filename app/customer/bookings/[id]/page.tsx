@@ -39,7 +39,7 @@ export default function BookingDetailsPage() {
       toast.error("Error", {
         description: "No booking ID provided.",
       });
-      router.push("/customer/flights");
+      router.push("/browse-flights");
       return;
     }
 
@@ -90,7 +90,7 @@ export default function BookingDetailsPage() {
             description: "An unexpected error occurred while loading booking details.",
           });
         }
-        router.push("/customer/flights");
+        router.push("/browse-flights");
       } finally {
         setLoading(false);
       }
@@ -170,7 +170,7 @@ export default function BookingDetailsPage() {
       <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
           <p className="text-muted-foreground">Booking not found</p>
-          <Link href="/customer/flights">
+          <Link href="/browse-flights">
             <Button>Back to Flights</Button>
           </Link>
         </div>
@@ -190,7 +190,7 @@ export default function BookingDetailsPage() {
     <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
       <div className="space-y-6">
         <div className="space-y-4">
-          <Link href="/customer/flights" className="inline-block mb-4">
+          <Link href="/browse-flights" className="inline-block mb-4">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Flights
@@ -314,7 +314,7 @@ export default function BookingDetailsPage() {
         )}
 
         <div className="flex justify-end">
-          <Link href="/customer/flights">
+          <Link href="/browse-flights">
             <Button>
               Back to Flights
             </Button>

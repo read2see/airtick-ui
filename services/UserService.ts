@@ -98,13 +98,13 @@ export const UserService = {
     const formData = new FormData();
     
     if (payload.first_name) {
-      formData.append("first_name", payload.first_name);
+      formData.append("firstName", payload.first_name);
     }
     if (payload.last_name) {
-      formData.append("last_name", payload.last_name);
+      formData.append("lastName", payload.last_name);
     }
     if (payload.profile_img) {
-      formData.append("profile_img", payload.profile_img);
+      formData.append("profileImg", payload.profile_img);
     }
     if (file) {
       formData.append("file", file);

@@ -61,7 +61,7 @@ export default function NewBookingPage() {
       toast.error("Error", {
         description: "No flight selected. Please select a flight to book.",
       });
-      router.push("/customer/flights");
+      router.push("/browse-flights");
       return;
     }
 
@@ -102,7 +102,7 @@ export default function NewBookingPage() {
             description: "An unexpected error occurred while loading flight details.",
           });
         }
-        router.push("/customer/flights");
+        router.push("/browse-flights");
       } finally {
         setLoading(false);
       }
@@ -161,8 +161,20 @@ export default function NewBookingPage() {
     setSubmitting(true);
 
     try {
+      const priceValue =
+        typeof flight.price === "object" && flight.price !== null && "parsedValue" in flight.price
+          ? flight.price.parsedValue
+          : typeof flight.price === "number"
+          ? flight.price
+          : 0;
+
       const booking = await BookingService.createBooking({
-        flightId: parseInt(flightId),
+        flight: {
+          id: parseInt(flightId),
+          price: priceValue,
+          departure_time: flight.departure_time ?? flight.departureTime ?? "",
+          arrival_time: flight.arrival_time ?? flight.arrivalTime ?? "",
+        },
         status: "PENDING",
       });
 
@@ -218,7 +230,7 @@ export default function NewBookingPage() {
     <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
       <div className="space-y-6">
         <div className="space-y-4">
-          <Link href="/customer/flights" className="inline-block mb-4">
+          <Link href="/browse-flights" className="inline-block mb-4">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Flights
@@ -336,7 +348,7 @@ export default function NewBookingPage() {
             </form>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Link href="/customer/flights">
+            <Link href="/browse-flights">
               <Button variant="outline" type="button">
                 Cancel
               </Button>

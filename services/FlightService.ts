@@ -34,6 +34,13 @@ export interface CreateFlightRequest {
   price: number;
 }
 
+export interface FlightByOriginAirportRequest {
+  destination_airport_id: number;
+  departure_time: string;
+  arrival_time: string;
+  price: number;
+}
+
 export type UpdateFlightRequest = CreateFlightRequest;
 
 export const FlightService = {

@@ -15,11 +15,7 @@ export interface CreateAirportRequest {
   country: string;
 }
 
-export interface UpdateAirportRequest {
-  name?: string;
-  code?: string;
-  country?: string;
-}
+export type UpdateAirportRequest = CreateAirportRequest;
 
 export const AirportService = {
   /**

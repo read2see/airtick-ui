@@ -61,7 +61,6 @@ export default function RegisterPage() {
         duration: 5000,
       })
 
-      // Redirect to login page after successful registration
       setTimeout(() => {
         router.push("/login")
       }, 1500)
@@ -71,14 +70,11 @@ export default function RegisterPage() {
       if (error instanceof AxiosError) {
         const response = error.response
         
-        // Handle validation errors (422)
         if (response?.status === 422) {
           const errorData = response.data as any
           
-          // Handle field-specific validation errors
           if (errorData?.detail) {
             if (Array.isArray(errorData.detail)) {
-              // Handle array of validation errors
               errorData.detail.forEach((err: any) => {
                 const field = err.loc?.[err.loc.length - 1]
                 if (field === "email_address" || field === "email") {
@@ -106,7 +102,6 @@ export default function RegisterPage() {
           return
         }
         
-        // Handle email already exists (409 or 400)
         if (response?.status === 409 || response?.status === 400) {
           const errorMessage = 
             (response.data as any)?.detail || 
@@ -123,7 +118,6 @@ export default function RegisterPage() {
           return
         }
         
-        // Handle other errors
         const errorMessage = 
           (response?.data as any)?.detail || 
           (response?.data as any)?.message || 
