@@ -120,10 +120,13 @@ export const BookingService = {
 
   /**
    * Get user's bookings with pagination
-   * GET /api/bookings
+   * GET /api/bookings/users/{userId}
    */
-  async getUserBookings(params?: PaginationParams): Promise<PaginatedResponse<Booking>> {
-    const response = await apiClient.get(API_ROUTES.bookings.base, {
+  async getUserBookings(
+    userId: number | string,
+    params?: PaginationParams
+  ): Promise<PaginatedResponse<Booking>> {
+    const response = await apiClient.get(API_ROUTES.bookings.byUserId(userId), {
       params,
     });
     const data = response.data;

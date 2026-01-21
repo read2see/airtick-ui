@@ -65,6 +65,9 @@ export const API_ROUTES = {
 
     verifyOtp: (bookingId: number | string) =>
       `/api/bookings/booking/${bookingId}/verify`,
+
+    byUserId: (userId: number | string) =>
+      `/api/bookings/users/${userId}`,
   },
 
   payments: {
