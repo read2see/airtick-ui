@@ -37,20 +37,17 @@ apiClient.interceptors.response.use(
                  window.location.pathname.startsWith("/resend-verification"));
             
             const isAuthCheckEndpoint = error.config?.url?.includes("/auth/users/me");
-            // Don't redirect for admin API endpoints - let the component handle the error
+            // Exclude endpoints where components handle errors instead of redirecting
             const isAdminApiEndpoint = error.config?.url?.includes("/api/admin");
-            // Don't redirect for logout endpoint - let the logout handler manage navigation
             const isLogoutEndpoint = error.config?.url?.includes("/auth/users/logout");
-            // Don't redirect for flights endpoint - let the component handle the error
             const isFlightsEndpoint = error.config?.url?.includes("/flights");
-            // Don't redirect for bookings endpoint - let the component handle the error
             const isBookingsEndpoint = error.config?.url?.includes("/bookings");
-            // Don't redirect for users endpoints - let the component handle the error
             const isUsersEndpoint = error.config?.url?.includes("/auth/users/") && 
               (error.config?.url?.includes("/auth/users/search") || 
                error.config?.url?.match(/\/auth\/users\/\d+$/));
+            const isAirportsEndpoint = error.config?.url?.includes("/api/airports");
             
-            if (!isAuthPage && !isAuthCheckEndpoint && !isAdminApiEndpoint && !isLogoutEndpoint && !isFlightsEndpoint && !isBookingsEndpoint && !isUsersEndpoint) {
+            if (!isAuthPage && !isAuthCheckEndpoint && !isAdminApiEndpoint && !isLogoutEndpoint && !isFlightsEndpoint && !isBookingsEndpoint && !isUsersEndpoint && !isAirportsEndpoint) {
                 window.location.href = "/login";
             }
         }
