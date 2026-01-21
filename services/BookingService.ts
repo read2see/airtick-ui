@@ -4,13 +4,18 @@ import { Booking, BookingResponse } from "@/types/booking";
 import { PaginationParams } from "@/types/PaginationParams";
 import { PaginatedResponse } from "@/types/pagination";
 
+export interface BookingSearchParams extends PaginationParams {
+  id?: number;
+  userId?: number;
+  user_id?: number;
+  flightId?: number;
+  flight_id?: number;
+  status?: "CONFIRMED" | "PENDING" | "CANCELLED" | "COMPLETED" | string;
+  search?: string;
+}
+
 export interface CreateBookingRequest {
-  flight: {
-    id: number;
-    price: number;
-    departure_time: string;
-    arrival_time: string;
-  };
+  flight_id: number;
   status?: "CONFIRMED" | "PENDING" | "CANCELLED";
 }
 
@@ -23,7 +28,10 @@ export interface BookingResponseData {
   updatedAt: string;
 }
 
-export type UpdateBookingRequest = CreateBookingRequest;
+export interface UpdateBookingRequest {
+  flight_id: number;
+  status?: "CONFIRMED" | "PENDING" | "CANCELLED";
+}
 
 export const BookingService = {
   /**
@@ -32,12 +40,7 @@ export const BookingService = {
    */
   async createBooking(payload: CreateBookingRequest): Promise<BookingResponseData> {
     const requestPayload = {
-      flight: {
-        id: payload.flight.id,
-        price: payload.flight.price,
-        departure_time: payload.flight.departure_time,
-        arrival_time: payload.flight.arrival_time,
-      },
+      flight_id: payload.flight_id,
       status: payload.status,
     };
     const { data } = await apiClient.post(API_ROUTES.bookings.base, requestPayload);
@@ -53,16 +56,66 @@ export const BookingService = {
     payload: UpdateBookingRequest
   ): Promise<BookingResponseData> {
     const requestPayload = {
-      flight: {
-        id: payload.flight.id,
-        price: payload.flight.price,
-        departure_time: payload.flight.departure_time,
-        arrival_time: payload.flight.arrival_time,
-      },
+      flight_id: payload.flight_id,
       status: payload.status,
     };
     const { data } = await apiClient.put(API_ROUTES.bookings.byId(bookingId), requestPayload);
     return data;
+  },
+
+  /**
+   * Get admin bookings with pagination (all bookings)
+   * GET /api/bookings
+   */
+  async getAdminBookings(
+    params?: BookingSearchParams
+  ): Promise<PaginatedResponse<Booking>> {
+    const response = await apiClient.get(API_ROUTES.bookings.base, {
+      params,
+    });
+    const data = response.data;
+
+    if (data && typeof data === "object" && !Array.isArray(data)) {
+      if (data.data && Array.isArray(data.data)) {
+        return {
+          data: data.data,
+          meta: data.meta || {
+            currentPage: 0,
+            perPage: 10,
+            total: data.data.length,
+            totalPages: 1,
+            nextPage: null,
+            prevPage: null,
+          },
+        };
+      }
+      const bookingsArray = Object.values(data).filter(
+        (item): item is Booking => typeof item === "object" && item !== null && "id" in item
+      ) as Booking[];
+      return {
+        data: bookingsArray,
+        meta: data.meta || {
+          currentPage: 0,
+          perPage: 10,
+          total: bookingsArray.length,
+          totalPages: 1,
+          nextPage: null,
+          prevPage: null,
+        },
+      };
+    }
+
+    return {
+      data: Array.isArray(data) ? data : [],
+      meta: {
+        currentPage: 0,
+        perPage: 10,
+        total: Array.isArray(data) ? data.length : 0,
+        totalPages: 1,
+        nextPage: null,
+        prevPage: null,
+      },
+    };
   },
 
   /**
@@ -140,15 +193,10 @@ export const BookingService = {
    */
   async cancelBooking(
     bookingId: number | string,
-    flight: { id: number; price: number; departure_time: string; arrival_time: string }
+    flightId: number
   ): Promise<BookingResponseData> {
     const requestPayload = {
-      flight: {
-        id: flight.id,
-        price: flight.price,
-        departure_time: flight.departure_time,
-        arrival_time: flight.arrival_time,
-      },
+      flight_id: flightId,
       status: "CANCELLED" as const,
     };
     const { data } = await apiClient.put(API_ROUTES.bookings.byId(bookingId), requestPayload);
@@ -168,5 +216,29 @@ export const BookingService = {
       updatedAt: data.updated_at ?? data.updatedAt,
       status: data.status ?? "PENDING",
     };
+  },
+
+  /**
+   * Confirm booking (update status to CONFIRMED)
+   * PUT /api/bookings/{bookingId}
+   */
+  async confirmBooking(
+    bookingId: number | string,
+    flightId: number
+  ): Promise<BookingResponseData> {
+    const requestPayload = {
+      flight_id: flightId,
+      status: "CONFIRMED" as const,
+    };
+    const { data } = await apiClient.put(API_ROUTES.bookings.byId(bookingId), requestPayload);
+    return data;
+  },
+
+  /**
+   * Delete booking
+   * DELETE /api/bookings/{bookingId}
+   */
+  async deleteBooking(bookingId: number | string): Promise<void> {
+    await apiClient.delete(API_ROUTES.bookings.byId(bookingId));
   },
 };
