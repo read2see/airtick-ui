@@ -195,7 +195,7 @@ export const BookingService = {
    * PUT /api/bookings/{bookingId}
    */
   async cancelBooking(
-    bookingId: number | string,
+    bookingId: number,
     flightId: number
   ): Promise<BookingResponseData> {
     const requestPayload = {

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AxiosError } from "axios";
+import axios from "axios";
 import { toast } from "sonner";
 
 import {
@@ -35,7 +35,7 @@ export function CancelBookingDialog({
   const handleCancel = async () => {
     if (!booking) return;
 
-    const flight = booking.flight;
+    let flight = booking.flight;
     if (!flight || !flight.id) {
       toast.error("Error", {
         description: "Cannot cancel booking: Flight information is missing.",
@@ -53,14 +53,9 @@ export function CancelBookingDialog({
     setIsCancelling(true);
 
     try {
-      await BookingService.cancelBooking(booking.id, {
-        id: flight.id,
-        price: priceValue,
-        departure_time: flight.departure_time ?? flight.departureTime ?? "",
-        arrival_time: flight.arrival_time ?? flight.arrivalTime ?? "",
-      });
+      await BookingService.cancelBooking(booking.id, flight.id);
       
-      const flight = booking.flight;
+      flight = booking.flight;
       const route = flight
         ? `Flight #${flight.id}`
         : `Booking ${booking.id}`;
@@ -74,10 +69,10 @@ export function CancelBookingDialog({
     } catch (error) {
       setIsCancelling(false);
 
-      if (error instanceof AxiosError) {
+      if (axios.isAxiosError(error)) {
         const errorMessage =
-          (error.response?.data as any)?.detail ||
-          (error.response?.data as any)?.message ||
+          (error.response?.data as SimpleErrorResponse)?.detail ||
+          (error.response?.data as SimpleErrorResponse)?.message ||
           "Failed to cancel booking";
         toast.error("Error", {
           description: errorMessage,
