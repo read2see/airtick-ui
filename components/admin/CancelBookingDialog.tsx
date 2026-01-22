@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { toast } from "sonner";
 
 import {
@@ -43,9 +43,8 @@ export function CancelBookingDialog({
     try {
       const flight = booking.flight;
       const flightId = flight.id;
-
       await BookingService.cancelBooking(booking.id, flightId);
-
+      
       toast.success("Booking cancelled", {
         description: `Booking #${booking.id} has been cancelled successfully.`,
       });
@@ -54,8 +53,7 @@ export function CancelBookingDialog({
       onSuccess?.();
     } catch (error) {
       setIsCancelling(false);
-
-      if (error instanceof AxiosError) {
+      if (axios.isAxiosError(error)) {
         const errorMessage =
           (error.response?.data as any)?.detail ||
           (error.response?.data as any)?.message ||
