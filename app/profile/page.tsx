@@ -178,7 +178,11 @@ export default function ProfilePage() {
         <Separator />
 
         {/* Bookings History */}
-        <BookingsList />
+        {
+          user?.role == "CUSTOMER" &&
+          <BookingsList  />
+        }
+        
       </div>
     </div>
   )

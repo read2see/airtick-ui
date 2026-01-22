@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Plane, Clock, MapPin } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface FlightCardProps {
   flight: FlightResponse;
@@ -59,7 +60,8 @@ const calculateDuration = (departure: string, arrival: string): string => {
 
 export function FlightCard({ flight, originAirport, destinationAirport }: FlightCardProps) {
   const router = useRouter();
-  
+  const { user } = useAuth();
+
   const priceValue =
     typeof flight.price === "object" && flight.price !== null && "parsedValue" in flight.price
       ? flight.price.parsedValue
@@ -133,11 +135,14 @@ export function FlightCard({ flight, originAirport, destinationAirport }: Flight
           </div>
         </div>
       </CardContent>
+      {
+      user?.role == "CUSTOMER" &&
       <CardFooter className="border-t pt-4">
         <Button onClick={handleBookFlight} className="w-full">
           Book Flight
         </Button>
       </CardFooter>
+      }
     </Card>
   );
 }
