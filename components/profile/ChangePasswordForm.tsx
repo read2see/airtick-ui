@@ -71,7 +71,6 @@ export function ChangePasswordForm() {
         
         if (response?.status === 400 || response?.status === 422) {
           const errorData = response.data as any
-          
           if (errorData?.detail) {
             if (Array.isArray(errorData.detail)) {
               errorData.detail.forEach((err: any) => {
@@ -109,7 +108,7 @@ export function ChangePasswordForm() {
             }
           } else {
             toast.error("Validation error", {
-              description: "Please check your input and try again.",
+              description: errorData?.message ?? "Invalid input data, check your inputs.",
             })
           }
         } else {
