@@ -5,6 +5,7 @@ import { UserResponse } from "@/types/user";
 import { DataTable, Column } from "@/components/ui/data-table";
 import { TableActions, TableAction } from "@/components/admin/TableActions";
 import { Trash2, RotateCcw } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
 
 interface UserTableProps {
   users: UserResponse[];
@@ -13,6 +14,8 @@ interface UserTableProps {
   onReactivate?: (user: UserResponse) => void;
   searchValue?: string;
   onSearch?: (value: string) => void;
+  filter?: string;
+  onFilterChange?: (filter: string) => void;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -38,6 +41,8 @@ export function UserTable({
   onReactivate,
   searchValue = "",
   onSearch,
+  filter,
+  onFilterChange,
   pagination,
   sorting,
 }: UserTableProps) {
@@ -144,17 +149,67 @@ export function UserTable({
     },
   ];
 
+  const filterOptions = [
+    { value: "all", label: "All Users" },
+    { value: "verified", label: "Verified" },
+    { value: "unverified", label: "Unverified" },
+    { value: "active", label: "Active" },
+    { value: "inactive", label: "Inactive" },
+  ];
+
+  const getFilterValue = (value: string | number | undefined): string => {
+    if (!value || value === "all") return "";
+    
+    const filterMap: Record<string, string> = {
+      verified: "?emailVerified=true",
+      unverified: "?emailVerified=false",
+      active: "?active=true",
+      inactive: "?active=false",
+    };
+    
+    return filterMap[String(value)] || "";
+  };
+
+  const getFilterFromQuery = (query: string | undefined): string => {
+    if (!query) return "all";
+    
+    if (query === "?emailVerified=true") return "verified";
+    if (query === "?emailVerified=false") return "unverified";
+    if (query === "?active=true") return "active";
+    if (query === "?active=false") return "inactive";
+    
+    return "all";
+  };
+
   return (
-    <DataTable
-      data={users}
-      columns={columns}
-      loading={loading}
-      searchPlaceholder="Search users by email or name..."
-      onSearch={onSearch}
-      searchValue={searchValue}
-      pagination={pagination}
-      sorting={sorting}
-      emptyMessage="No users found"
-    />
+    <div className="space-y-4">
+      {onFilterChange && typeof onFilterChange === "function" && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <Combobox
+            options={filterOptions}
+            value={getFilterFromQuery(filter)}
+            onValueChange={(value) => {
+              if (typeof onFilterChange === "function") {
+                onFilterChange(getFilterValue(value));
+              }
+            }}
+            placeholder="Filter users"
+            className="w-[180px]"
+          />
+        </div>
+      )}
+
+      <DataTable
+        data={users}
+        columns={columns}
+        loading={loading}
+        searchPlaceholder="Search users by email or name..."
+        onSearch={onSearch}
+        searchValue={searchValue}
+        pagination={pagination}
+        sorting={sorting}
+        emptyMessage="No users found"
+      />
+    </div>
   );
 }

@@ -27,6 +27,7 @@ export default function AdminUsersPage() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
     null
   );
+  const [filter, setFilter] = useState<string>("");
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -42,6 +43,18 @@ export default function AdminUsersPage() {
 
       if (sortColumn && sortDirection) {
         params.sort = `${sortColumn},${sortDirection}`;
+      }
+
+      if (filter) {
+        if (filter === "?active=true") {
+          params.active = true;
+        } else if (filter === "?active=false") {
+          params.active = false;
+        } else if (filter === "?emailVerified=true") {
+          params.emailVerified = true;
+        } else if (filter === "?emailVerified=false") {
+          params.emailVerified = false;
+        }
       }
 
       const response = await UserService.getUsers(params);
@@ -75,7 +88,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, perPage, searchValue, sortColumn, sortDirection]);
+  }, [currentPage, perPage, searchValue, sortColumn, sortDirection, filter]);
 
   useEffect(() => {
     fetchUsers();
@@ -100,6 +113,11 @@ export default function AdminUsersPage() {
   const handleSort = (column: string, direction: "asc" | "desc") => {
     setSortColumn(column);
     setSortDirection(direction);
+    setCurrentPage(1);
+  };
+
+  const handleFilterChange = (newFilter: string) => {
+    setFilter(newFilter);
     setCurrentPage(1);
   };
 
@@ -141,6 +159,8 @@ export default function AdminUsersPage() {
         onReactivate={handleReactivate}
         searchValue={searchValue}
         onSearch={handleSearch}
+        filter={filter}
+        onFilterChange={handleFilterChange}
         pagination={{
           currentPage,
           totalPages,
