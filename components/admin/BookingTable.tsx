@@ -7,13 +7,7 @@ import { DataTable, Column } from "@/components/ui/data-table";
 import { TableActions, TableAction } from "@/components/admin/TableActions";
 import { Eye, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 
 interface BookingTableProps {
   bookings: Booking[];
@@ -281,25 +275,24 @@ export function BookingTable({
     },
   ];
 
+  const statusOptions = [
+    { value: "all", label: "All Statuses" },
+    { value: "PENDING", label: "Pending" },
+    { value: "CANCELLED", label: "Cancelled" },
+    { value: "CONFIRMED", label: "Confirmed" },
+  ];
+
   return (
     <div className="space-y-4">
       {onStatusFilterChange && (
         <div className="flex items-center gap-2 flex-wrap">
-          <Select
+          <Combobox
+            options={statusOptions}
             value={statusFilter ?? "all"}
-            onValueChange={(value) => onStatusFilterChange(value === "all" ? "" : value)}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filter by status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="PENDING">Pending</SelectItem>
-              <SelectItem value="CONFIRMED">Confirmed</SelectItem>
-              <SelectItem value="CANCELLED">Cancelled</SelectItem>
-              <SelectItem value="COMPLETED">Completed</SelectItem>
-            </SelectContent>
-          </Select>
+            onValueChange={(value) => onStatusFilterChange(value === "all" ? "" : String(value))}
+            placeholder="Filter by status"
+            className="w-[180px]"
+          />
         </div>
       )}
 
