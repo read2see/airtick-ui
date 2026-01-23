@@ -15,6 +15,8 @@ export interface UserSearchParams extends PaginationParams {
   id?: number;
   email?: string;
   search?: string;
+  active?: boolean;
+  emailVerified?: boolean;
 }
 
 export const UserService = {
