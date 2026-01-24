@@ -109,7 +109,7 @@ export function Sidebar() {
   return (
     <>
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 flex h-16 items-center justify-between border-b bg-card px-4">
-        <h1 className="text-lg font-semibold">AirTick Admin</h1>
+        <h1 className="ml-[8rem] text-lg font-semibold">AirTick Admin</h1>
         <Button
           variant="ghost"
           size="icon"
