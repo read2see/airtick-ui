@@ -41,6 +41,7 @@ function LoginForm() {
   const { login } = useAuth()
   const searchParams = useSearchParams()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const isVerified = searchParams.get("verified") === "true"
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -163,6 +164,15 @@ function LoginForm() {
       <div className="">
         <h1 className="text-xl font-bold mb-3">AIRTICK</h1>
       </div>
+      {isVerified && (
+        <Card className="w-[95%] sm:max-w-md mx-auto lg:mx-auto md:mx-auto mb-4 border-green-500">
+          <CardContent className="pt-2">
+            <p className="text-sm text-green-600 dark:text-green-400">
+              Your account has been successfully verified. You can now log in to your account.
+            </p>
+          </CardContent>
+        </Card>
+      )}
       <Card className="w-[95%] sm:max-w-md mx-auto lg:mx-auto md:mx-auto">
         <CardHeader>
           <CardTitle>Login</CardTitle>
