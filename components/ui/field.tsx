@@ -1,5 +1,6 @@
 import { useMemo } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { AlertTriangle } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
@@ -224,10 +225,11 @@ function FieldError({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn("text-destructive text-sm font-normal", className)}
+      className={cn("text-destructive text-sm font-normal flex items-start gap-1.5", className)}
       {...props}
     >
-      {content}
+      <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+      {typeof content === "string" ? <span>{content}</span> : content}
     </div>
   )
 }
